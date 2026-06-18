@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "K4RL Next.js",
+      "runtimeExecutable": "/Users/calliope/Library/pnpm/bin/pnpm",
+      "runtimeArgs": ["--dir", "/Users/calliope/Desktop/K4RL/k4rl", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}

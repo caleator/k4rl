@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pdftotext \"/Users/calliope/Desktop/K4RL/Quintessential_K4RL_Agreement \\(MA comments 29.04.26 signed \\(1\\).pdf\" -)"
+    ]
+  }
+}

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload certificates — K4RL</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #fafafa;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      border-bottom: 1px solid #27272a;
+      background: #18181b;
+    }
+    .header-inner {
+      max-width: 672px;
+      margin: 0 auto;
+      padding: 20px 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .brand-logo {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid #27272a;
+      background: #27272a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .brand-logo svg { color: #71717a; }
+    .header-meta { min-width: 0; flex: 1; }
+    .header-names {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 14px;
+    }
+    .brand-name { font-weight: 600; color: #fafafa; }
+    .sep { width: 1px; height: 14px; background: #3f3f46; }
+    .factory-name { color: #a1a1aa; }
+    .context-sentence { margin-top: 2px; font-size: 12px; color: #71717a; }
+
+    /* ── Main ── */
+    main {
+      max-width: 672px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    h1 { font-size: 20px; font-weight: 600; color: #fafafa; }
+    .subtitle { margin-top: 4px; font-size: 14px; color: #a1a1aa; }
+
+    /* ── Drop zone ── */
+    .dropzone {
+      margin-top: 24px;
+      border: 2px dashed #3f3f46;
+      border-radius: 10px;
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .dropzone:hover {
+      border-color: #71717a;
+      background: rgba(255,255,255,0.02);
+    }
+    .dropzone.drag-over {
+      border-color: #22c55e;
+      background: rgba(34,197,94,0.05);
+    }
+    .dropzone svg { color: #71717a; margin-bottom: 12px; }
+    .dropzone-title { font-size: 14px; font-weight: 500; color: #fafafa; }
+    .dropzone-sub { margin-top: 2px; font-size: 12px; color: #71717a; }
+    .file-input { display: none; }
+
+    /* ── File list ── */
+    .file-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #18181b;
+    }
+    .file-item svg { flex-shrink: 0; color: #71717a; }
+    .file-info { flex: 1; min-width: 0; }
+    .file-name { font-size: 14px; font-weight: 500; color: #fafafa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-size { font-size: 12px; color: #71717a; }
+    .remove-btn {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #71717a;
+      padding: 2px;
+      transition: color 0.15s;
+    }
+    .remove-btn:hover { color: #fafafa; }
+
+    /* ── Submit ── */
+    .actions { margin-top: 24px; }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #22c55e;
+      color: #052e16;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #16a34a; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Success state ── */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 64px 24px;
+    }
+    .success-icon {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+      color: #22c55e;
+    }
+    .success-title { font-size: 20px; font-weight: 600; color: #fafafa; margin-bottom: 8px; }
+    .success-sub { font-size: 14px; color: #a1a1aa; }
+
+    /* ── Error banner ── */
+    .error-banner {
+      display: none;
+      margin-top: 16px;
+      padding: 10px 12px;
+      border: 1px solid rgba(239,68,68,0.4);
+      border-radius: 6px;
+      background: rgba(239,68,68,0.05);
+      color: #fca5a5;
+      font-size: 14px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-inner">
+      <div class="brand-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+      </div>
+      <div class="header-meta">
+        <div class="header-names">
+          <span class="brand-name">{{BRAND_NAME}}</span>
+          <span class="sep"></span>
+          <span class="factory-name">{{FACTORY_NAME}}</span>
+        </div>
+        <p class="context-sentence">{{CONTEXT_SENTENCE}}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload form -->
+  <main id="upload-form">
+    <h1>Upload certificates</h1>
+    <p class="subtitle">Upload your compliance certificates below. PDF, JPG, or PNG files accepted.</p>
+
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      <p class="dropzone-title">Drag and drop files here</p>
+      <p class="dropzone-sub">or click to browse — PDF, JPG, or PNG, up to 10 files</p>
+    </div>
+
+    <input type="file" id="file-input" class="file-input" accept=".pdf,.jpg,.jpeg,.png" multiple onchange="handleFileInput(event)" />
+
+    <ul class="file-list" id="file-list" role="list" aria-label="Files to upload"></ul>
+
+    <div class="error-banner" id="error-banner">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Upload failed. Please try again or contact {{BRAND_NAME}}.
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="submit-btn" disabled onclick="handleSubmit()">
+        Submit certificates
+      </button>
+    </div>
+  </main>
+
+  <!-- Success screen -->
+  <main id="success-screen" class="success-screen">
+    <div class="success-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <h1 class="success-title">Certificates uploaded</h1>
+    <p class="success-sub">{{BRAND_NAME}} has been notified. You can close this page.</p>
+  </main>
+
+  <script>
+    const files = [];
+    const MAX_FILES = 10;
+    const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function renderFileList() {
+      const list = document.getElementById('file-list');
+      list.innerHTML = files.map((f, i) => `
+        <li>
+          <div class="file-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div class="file-info">
+              <p class="file-name">${f.name}</p>
+              <p class="file-size">${formatBytes(f.size)}</p>
+            </div>
+            <button class="remove-btn" onclick="removeFile(${i})" aria-label="Remove ${f.name}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </li>
+      `).join('');
+      updateSubmitButton();
+    }
+
+    function updateSubmitButton() {
+      const btn = document.getElementById('submit-btn');
+      const count = files.length;
+      btn.disabled = count === 0;
+      btn.textContent = count > 0
+        ? `Submit ${count} certificate${count !== 1 ? 's' : ''}`
+        : 'Submit certificates';
+    }
+
+    function addFiles(fileList) {
+      const remaining = MAX_FILES - files.length;
+      Array.from(fileList).slice(0, remaining)
+        .filter(f => ACCEPTED_TYPES.includes(f.type))
+        .forEach(f => files.push({ name: f.name, size: f.size, type: f.type, _raw: f }));
+      renderFileList();
+    }
+
+    function removeFile(i) {
+      files.splice(i, 1);
+      renderFileList();
+    }
+
+    function handleFileInput(e) {
+      addFiles(e.target.files);
+      e.target.value = '';
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.add('drag-over');
+    }
+
+    function handleDragLeave() {
+      document.getElementById('dropzone').classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.remove('drag-over');
+      addFiles(e.dataTransfer.files);
+    }
+
+    async function handleSubmit() {
+      if (!files.length) return;
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Uploading…';
+      // Simulate upload
+      await new Promise(r => setTimeout(r, 1800));
+      document.getElementById('upload-form').style.display = 'none';
+      const success = document.getElementById('success-screen');
+      success.style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
